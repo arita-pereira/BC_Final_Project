@@ -2,7 +2,7 @@
 
 A data story built for the allWomen Data Analysis Bootcamp (Jan to Apr 2025, demo day on April 10th, 2025).
 
-My son was about to start preschool in Barcelona, and that choice shapes the next 9 to 13 years of schooling. I wanted to know how the pre-registration process works and whether the numbers favor families like mine, so I looked at the data. [Full presentation (PDF)](Final%20Project%20DA%20Bootcamp%20-%20Preschool%20Registration%20in%20Barcelona.pdf)
+My son was about to start preschool in Barcelona, and that choice shapes the next 9 to 13 years of schooling. I wanted to know how the pre-registration process works and whether the numbers favor families like mine, so I looked at the data. The presentation has interactive charts, so the best way to see it is on Canva: [Interactive presentation](https://canva.link/b2ulmjp3ocmfc1i). A static [PDF version](reports/preschool_registration_presentation.pdf) is also included.
 
 ## Questions
 
@@ -20,7 +20,7 @@ My son was about to start preschool in Barcelona, and that choice shapes the nex
 - **The school map is changing.** Public schools increased while private ones decreased, partly because several private schools became public between 2019 and 2023.
 
 ![Births in Barcelona](media/births_bcn.png)
-![School places vs children](media/School%20Places%20vs%20children.png)
+![School places vs children](media/places_vs_children.png)
 
 ## Data
 
@@ -29,16 +29,20 @@ My son was about to start preschool in Barcelona, and that choice shapes the nex
 | [Idescat](https://www.idescat.cat/) | Births in Barcelona by year and sex, 1975 to 2023 |
 | [Dades Obertes de Catalunya](https://analisi.transparenciacatalunya.cat/) | Schools, teachers, offered places and enrollments by district and school type |
 
-The source files are large (some above 100 MB), so they are not stored in this repo. Download them from the portals above.
+The small tables the analysis reads are in `data/`, with the summary tables behind the charts in `data/summary_tables/`. The original source files are large (some above 100 MB), so they are not stored in this repo. Download them from the portals above.
 
 ## Tools
 
 Python (Pandas, NumPy, Matplotlib, Seaborn, Plotly) in Jupyter Notebook for cleaning and EDA. Google Sheets for intermediate tables. Flourish and Canva for the final charts and the presentation.
 
-## Files
+## Project structure
 
-- `Final Project_draft2.ipynb`: the analysis notebook
-- `Final Project DA Bootcamp - Preschool Registration in Barcelona.pdf`: the presentation
+```
+notebooks/   preschool_registration_eda.ipynb   cleaning and EDA
+data/        small input tables and summary_tables/
+media/       charts used in this README
+reports/     presentation (PDF)
+```
 
 ## Next steps
 
