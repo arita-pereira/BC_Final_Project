@@ -1,0 +1,8 @@
+# large raw downloads (see README for sources)
+data/raw/
+datasets/
+# local / system files
+.DS_Store
+.env
+.ipynb_checkpoints/
+__pycache__/
