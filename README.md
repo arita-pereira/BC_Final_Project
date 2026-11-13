@@ -1,8 +1,10 @@
 # Preschool Registration in Barcelona
 
-<img src="media/preschool_bcn_flow.png" alt="Analysis flow" width="800">
+<img src="media/preschool_bcn_flow.png" alt="Preschool Registration in Barcelona: analysis flow" width="800">
 
 A data story built for the allWomen Data Analysis Bootcamp (Jan to Apr 2025, demo day on April 10th, 2025).
+
+**[Live dashboard](https://preschool-bcn-dashboard.streamlit.app)**: explore births, places vs children and the public/private mix by district.
 
 My son was about to start preschool in Barcelona, and that choice shapes the next 9 to 13 years of schooling. I wanted to know how the pre-registration process works and whether the numbers favor families like mine, so I looked at the data. The presentation has interactive charts, so the best way to see it is on Canva: [Interactive presentation](https://canva.link/b2ulmjp3ocmfc1i). A static [PDF version](reports/preschool_registration_presentation.pdf) is also included.
 
