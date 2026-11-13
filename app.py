@@ -191,7 +191,13 @@ with tab3:
     fig.update_layout(yaxis_title=None, xaxis_range=[0, 100], height=max(400, 32 * len(pivot) + 120))
     fig.update_traces(textposition="inside")
     if chosen != "All districts":
-        fig.update_yaxes(ticktext=[("> " + d + " <") if d == chosen else d for d in pivot.index], tickvals=list(pivot.index))
+        fig.for_each_trace(
+            lambda t: t.update(marker_opacity=[1.0 if d == chosen else 0.25 for d in t.y])
+        )
+        fig.update_yaxes(
+            tickvals=list(pivot.index),
+            ticktext=[f"<b>{d}</b>" if d == chosen else d for d in pivot.index],
+        )
     st.plotly_chart(fig, width="stretch")
 
     st.markdown("**Schools offering P3 by district**")
