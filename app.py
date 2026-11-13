@@ -7,14 +7,26 @@ import streamlit as st
 DATA = Path(__file__).parent / "data"
 TABLES = DATA / "summary_tables"
 
-PUBLIC_COLOR = "#00A896"
-PRIVATE_COLOR = "#F25F5C"
+# One public/private colour pair per chart, so each chart looks different.
+PAIRS = {
+    "places": ("#00A896", "#F25F5C"),
+    "schools": ("#4C6EF5", "#F5A623"),
+    "share": ("#8E5BD9", "#F28CB1"),
+    "centres": ("#2A6F97", "#E9C46A"),
+}
+
+
+def pair_map(key):
+    public, private = PAIRS[key]
+    return {"Public": public, "Private": private}
+
+
 BIRTHS_COLOR = "#3A7BD5"
 PLACES_COLOR = "#6C4AB6"
 CHILDREN_COLOR = "#F2994A"
 GAP_NEGATIVE = "#D64545"
 GAP_POSITIVE = "#2E9E6B"
-SEX_COLORS = {"Boys": "#4C9BE8", "Girls": "#E8749C"}
+SEX_COLORS = {"Boys": "#E9A23B", "Girls": "#7E57C2"}
 
 st.set_page_config(page_title="Preschool Registration in Barcelona", layout="wide")
 
@@ -128,7 +140,7 @@ with tab3:
         y="Places",
         color="Type of School",
         barmode="group",
-        color_discrete_map={"Public": PUBLIC_COLOR, "Private": PRIVATE_COLOR},
+        color_discrete_map=pair_map("places"),
     )
     fig.update_layout(xaxis_title=None, margin=dict(t=20))
     st.plotly_chart(fig, width="stretch")
@@ -148,7 +160,7 @@ with tab3:
         y="Schools",
         color="Type of School",
         barmode="group",
-        color_discrete_map={"Public": PUBLIC_COLOR, "Private": PRIVATE_COLOR},
+        color_discrete_map=pair_map("schools"),
         labels={"Curs": "School year"},
     )
     fig.update_layout(xaxis_title=None, margin=dict(t=20))
@@ -188,7 +200,7 @@ with tab3:
         orientation="h",
         text="Label",
         category_orders={"Municipal District": list(pivot.index), "Type of School": ["Public", "Private"]},
-        color_discrete_map={"Public": PUBLIC_COLOR, "Private": PRIVATE_COLOR},
+        color_discrete_map=pair_map("share"),
         labels={"Share": "Share of places (%)"},
         title=f"Public and private share of places by district, {year}",
     )
@@ -227,7 +239,7 @@ with tab3:
             orientation="h",
             barmode="stack",
             category_orders={"Nom DM": order, "Type of School": ["Public", "Private"]},
-            color_discrete_map={"Public": PUBLIC_COLOR, "Private": PRIVATE_COLOR},
+            color_discrete_map=pair_map("centres"),
             title=f"Schools offering P3 by district, {curs} (private includes concertada)",
         )
         fig.update_layout(yaxis_title=None, height=max(400, 32 * len(order) + 120))
@@ -244,7 +256,7 @@ with tab3:
             color="Type of School",
             barmode="group",
             title=f"{chosen}: {measure.lower()} over time",
-            color_discrete_map={"Public": PUBLIC_COLOR, "Private": PRIVATE_COLOR},
+            color_discrete_map=pair_map("share"),
         )
         fig.update_layout(xaxis_title=None)
         st.plotly_chart(fig, width="stretch")
