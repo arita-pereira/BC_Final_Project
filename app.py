@@ -199,33 +199,29 @@ with tab3:
     if not needed.issubset(centres.columns):
         st.info("School counts by district are not available for this dataset.")
     else:
-        cen = centres[centres["Nom ensenyament"].astype(str).str.contains("Parvulari", case=False, na=False)]
-        cen = cen[cen["Curs"].astype(str) == str(year)].copy()
-        if cen.empty:
-            st.info(f"No school-level data for {year}.")
-        else:
-            cen["Type of School"] = cen["Nom naturalesa"].astype(str).str.startswith("Púb").map(
-                {True: "Public", False: "Private"}
-            )
-            count = (
-                cen.groupby(["Nom DM", "Type of School"])["Codi centre"].nunique().reset_index(name="Schools")
-            )
-            order = (
-                count.groupby("Nom DM")["Schools"].sum().sort_values().index.tolist()
-            )
-            fig = px.bar(
-                count,
-                x="Schools",
-                y="Nom DM",
-                color="Type of School",
-                orientation="h",
-                barmode="stack",
-                category_orders={"Nom DM": order, "Type of School": ["Public", "Private"]},
-                color_discrete_map={"Public": PUBLIC_COLOR, "Private": PRIVATE_COLOR},
-                title=f"Schools offering P3 by district, {year} (private includes concertada)",
-            )
-            fig.update_layout(yaxis_title=None, height=max(400, 32 * len(order) + 120))
-            st.plotly_chart(fig, width="stretch")
+        parvulari = centres[centres["Nom ensenyament"].astype(str).str.contains("Parvulari", case=False, na=False)]
+        base = parvulari if not parvulari.empty else centres
+        curs_options = sorted(base["Curs"].astype(str).unique())
+        curs = st.selectbox("School year (schools)", curs_options, index=len(curs_options) - 1)
+        cen = base[base["Curs"].astype(str) == curs].copy()
+        cen["Type of School"] = cen["Nom naturalesa"].astype(str).str.startswith("Púb").map(
+            {True: "Public", False: "Private"}
+        )
+        count = cen.groupby(["Nom DM", "Type of School"])["Codi centre"].nunique().reset_index(name="Schools")
+        order = count.groupby("Nom DM")["Schools"].sum().sort_values().index.tolist()
+        fig = px.bar(
+            count,
+            x="Schools",
+            y="Nom DM",
+            color="Type of School",
+            orientation="h",
+            barmode="stack",
+            category_orders={"Nom DM": order, "Type of School": ["Public", "Private"]},
+            color_discrete_map={"Public": PUBLIC_COLOR, "Private": PRIVATE_COLOR},
+            title=f"Schools offering P3 by district, {curs} (private includes concertada)",
+        )
+        fig.update_layout(yaxis_title=None, height=max(400, 32 * len(order) + 120))
+        st.plotly_chart(fig, width="stretch")
 
     if chosen != "All districts":
         history = districts[
