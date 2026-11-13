@@ -9,8 +9,12 @@ TABLES = DATA / "summary_tables"
 
 PUBLIC_COLOR = "#2F6FDE"
 PRIVATE_COLOR = "#E08A1E"
-LINE_COLOR = "#2F6FDE"
-ACCENT_COLOR = "#C0392B"
+BIRTHS_COLOR = "#14A38B"
+PLACES_COLOR = "#6C4AB6"
+CHILDREN_COLOR = "#F2994A"
+GAP_NEGATIVE = "#D64545"
+GAP_POSITIVE = "#2E9E6B"
+SEX_COLORS = {"Boys": "#4C9BE8", "Girls": "#E8749C"}
 
 st.set_page_config(page_title="Preschool Registration in Barcelona", layout="wide")
 
@@ -79,12 +83,12 @@ with tab1:
     )
     view = births[(births["Year"] >= lo) & (births["Year"] <= hi)]
     fig = px.line(view, x="Year", y="Total", markers=True, labels={"Total": "Births"})
-    fig.update_traces(line_color=LINE_COLOR)
+    fig.update_traces(line_color=BIRTHS_COLOR)
     fig.update_layout(margin=dict(t=20), yaxis_title="Births in Barcelona")
     st.plotly_chart(fig, width="stretch")
     with st.expander("Boys and girls"):
         split = view.melt(id_vars="Year", value_vars=["Boys", "Girls"], var_name="Sex", value_name="Births")
-        st.plotly_chart(px.bar(split, x="Year", y="Births", color="Sex", barmode="group"), width="stretch")
+        st.plotly_chart(px.bar(split, x="Year", y="Births", color="Sex", barmode="group", color_discrete_map=SEX_COLORS), width="stretch")
 
 with tab2:
     long = vs.melt(id_vars="School Term", value_vars=["# Places", "# Children"], var_name="Series", value_name="Count")
@@ -95,7 +99,7 @@ with tab2:
         y="Count",
         color="Series",
         markers=True,
-        color_discrete_map={"Places": LINE_COLOR, "Children": ACCENT_COLOR},
+        color_discrete_map={"Places": PLACES_COLOR, "Children": CHILDREN_COLOR},
     )
     fig.update_layout(margin=dict(t=20), xaxis_title=None, yaxis_title="P3 places and children")
     st.plotly_chart(fig, width="stretch")
@@ -108,7 +112,7 @@ with tab2:
         labels={"Gap": "Places minus children"},
         title="Places minus children (negative means fewer places than children)",
     )
-    fig_gap.update_traces(marker_color=[ACCENT_COLOR if g < 0 else LINE_COLOR for g in gap_df["Gap"]])
+    fig_gap.update_traces(marker_color=[GAP_NEGATIVE if g < 0 else GAP_POSITIVE for g in gap_df["Gap"]])
     fig_gap.update_layout(xaxis_title=None)
     st.plotly_chart(fig_gap, width="stretch")
 
