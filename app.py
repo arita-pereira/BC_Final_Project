@@ -7,9 +7,9 @@ import streamlit as st
 DATA = Path(__file__).parent / "data"
 TABLES = DATA / "summary_tables"
 
-PUBLIC_COLOR = "#2F6FDE"
-PRIVATE_COLOR = "#E08A1E"
-BIRTHS_COLOR = "#14A38B"
+PUBLIC_COLOR = "#00A896"
+PRIVATE_COLOR = "#F25F5C"
+BIRTHS_COLOR = "#3A7BD5"
 PLACES_COLOR = "#6C4AB6"
 CHILDREN_COLOR = "#F2994A"
 GAP_NEGATIVE = "#D64545"
