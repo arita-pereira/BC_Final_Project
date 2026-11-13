@@ -26,10 +26,12 @@ def load_data():
         wide = pd.read_csv(TABLES / name)
         frames.append(wide.melt(id_vars=id_cols, var_name="School Year", value_name="Places"))
     districts = pd.concat(frames, ignore_index=True)
-    return births, vs, by_type, districts
+    schools = pd.read_csv(DATA / "schools_teachers_bcn.csv").sort_values("Curs")
+    centres = pd.read_csv(DATA / "places_offer_p3_bcn.csv")
+    return births, vs, by_type, districts, schools, centres
 
 
-births, vs, by_type, districts = load_data()
+births, vs, by_type, districts, schools, centres = load_data()
 
 st.title("Preschool Registration in Barcelona")
 st.write(
@@ -112,6 +114,7 @@ with tab2:
 
 with tab3:
     st.subheader("P3 places offered, public vs private")
+    st.caption("Private includes concertada schools.")
     long = by_type.melt(
         id_vars="School Year", value_vars=["Public", "Private"], var_name="Type of School", value_name="Places"
     )
@@ -122,6 +125,27 @@ with tab3:
         color="Type of School",
         barmode="group",
         color_discrete_map={"Public": PUBLIC_COLOR, "Private": PRIVATE_COLOR},
+    )
+    fig.update_layout(xaxis_title=None, margin=dict(t=20))
+    st.plotly_chart(fig, width="stretch")
+
+    st.subheader("Number of schools, public vs private")
+    st.caption("Private includes concertada schools. City-wide figures, not split by district.")
+    sch = schools.melt(
+        id_vars="Curs",
+        value_vars=["Centres_Públics", "Centres_Privats"],
+        var_name="Type of School",
+        value_name="Schools",
+    )
+    sch["Type of School"] = sch["Type of School"].map({"Centres_Públics": "Public", "Centres_Privats": "Private"})
+    fig = px.bar(
+        sch,
+        x="Curs",
+        y="Schools",
+        color="Type of School",
+        barmode="group",
+        color_discrete_map={"Public": PUBLIC_COLOR, "Private": PRIVATE_COLOR},
+        labels={"Curs": "School year"},
     )
     fig.update_layout(xaxis_title=None, margin=dict(t=20))
     st.plotly_chart(fig, width="stretch")
@@ -139,20 +163,69 @@ with tab3:
     for col in ["Public", "Private"]:
         if col not in pivot.columns:
             pivot[col] = 0
-    pivot["Public share"] = pivot["Public"] / (pivot["Public"] + pivot["Private"]) * 100
-    pivot = pivot.sort_values("Public share")
+    total = pivot["Public"] + pivot["Private"]
+    pivot["Public %"] = pivot["Public"] / total * 100
+    pivot["Private %"] = pivot["Private"] / total * 100
+    pivot = pivot.sort_values("Public %")
 
-    fig = px.bar(
-        pivot.reset_index(),
-        x="Public share",
-        y="Municipal District",
-        orientation="h",
-        labels={"Public share": "Public share of places (%)"},
-        title=f"Public share of places by district, {year}",
+    share = pivot.reset_index().melt(
+        id_vars="Municipal District",
+        value_vars=["Public %", "Private %"],
+        var_name="Type of School",
+        value_name="Share",
     )
-    fig.update_traces(marker_color=[ACCENT_COLOR if d == chosen else PUBLIC_COLOR for d in pivot.index])
-    fig.update_layout(yaxis_title=None, xaxis_range=[0, 100])
+    share["Type of School"] = share["Type of School"].str.replace(" %", "", regex=False)
+    share["Label"] = share["Share"].round(0).astype(int).astype(str) + "%"
+    fig = px.bar(
+        share,
+        x="Share",
+        y="Municipal District",
+        color="Type of School",
+        orientation="h",
+        text="Label",
+        category_orders={"Municipal District": list(pivot.index), "Type of School": ["Public", "Private"]},
+        color_discrete_map={"Public": PUBLIC_COLOR, "Private": PRIVATE_COLOR},
+        labels={"Share": "Share of places (%)"},
+        title=f"Public and private share of places by district, {year}",
+    )
+    fig.update_layout(yaxis_title=None, xaxis_range=[0, 100], height=max(400, 32 * len(pivot) + 120))
+    fig.update_traces(textposition="inside")
+    if chosen != "All districts":
+        fig.update_yaxes(ticktext=[("> " + d + " <") if d == chosen else d for d in pivot.index], tickvals=list(pivot.index))
     st.plotly_chart(fig, width="stretch")
+
+    st.markdown("**Schools offering P3 by district**")
+    needed = {"Curs", "Codi centre", "Nom naturalesa", "Nom DM", "Nom ensenyament"}
+    if not needed.issubset(centres.columns):
+        st.info("School counts by district are not available for this dataset.")
+    else:
+        cen = centres[centres["Nom ensenyament"].astype(str).str.contains("Parvulari", case=False, na=False)]
+        cen = cen[cen["Curs"].astype(str) == str(year)].copy()
+        if cen.empty:
+            st.info(f"No school-level data for {year}.")
+        else:
+            cen["Type of School"] = cen["Nom naturalesa"].astype(str).str.startswith("Púb").map(
+                {True: "Public", False: "Private"}
+            )
+            count = (
+                cen.groupby(["Nom DM", "Type of School"])["Codi centre"].nunique().reset_index(name="Schools")
+            )
+            order = (
+                count.groupby("Nom DM")["Schools"].sum().sort_values().index.tolist()
+            )
+            fig = px.bar(
+                count,
+                x="Schools",
+                y="Nom DM",
+                color="Type of School",
+                orientation="h",
+                barmode="stack",
+                category_orders={"Nom DM": order, "Type of School": ["Public", "Private"]},
+                color_discrete_map={"Public": PUBLIC_COLOR, "Private": PRIVATE_COLOR},
+                title=f"Schools offering P3 by district, {year} (private includes concertada)",
+            )
+            fig.update_layout(yaxis_title=None, height=max(400, 32 * len(order) + 120))
+            st.plotly_chart(fig, width="stretch")
 
     if chosen != "All districts":
         history = districts[
